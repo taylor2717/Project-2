@@ -1,0 +1,82 @@
+---
+title: "project2"
+format: html
+editor: visual
+---
+
+```{r}
+# ---- Packages ----
+library(shiny)
+library(bslib)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(rlang)
+library(stringr)
+```
+
+```{r}
+library(readr)
+NFL_Data <- read_csv("~/Downloads/NFL Play by Play 2009-2018 (v5).csv")
+View(NFL_Data)
+```
+
+```{r}
+# Identify variable types (robust to character-coded numerics)
+is_numeric_like <- function(x){
+is.numeric(x) || (is.character(x) && suppressWarnings(!any(is.na(as.numeric(x)))))
+}
+
+
+num_range <- function(v){
+vnum <- suppressWarnings(as.numeric(v))
+c(floor(min(vnum, na.rm=TRUE)), ceiling(max(vnum, na.rm=TRUE)))
+}
+```
+
+```{r}
+# NFL-specific preprocessing (safe if columns missing)
+if ("pass" %in% names(NFL_Data) || "rush" %in% names(NFL_Data)) {
+if (!"pass_rush" %in% names(NFL_Data)) {
+NFL_Data$pass_rush <- dplyr::case_when(
+("pass" %in% names(NFL_Data) && NFL_Data$pass == 1) ~ "Pass",
+("rush" %in% names(NFL_Data) && NFL_Data$rush == 1) ~ "Rush",
+TRUE ~ "Other"
+)
+}
+}
+for (col in c("down","qtr","play_type")){
+if(col %in% names(NFL_Data)) NFL_Data[[col]] <- as.factor(NFL_Data[[col]])
+}
+preferred_cats <- c("posteam","defteam","play_type","pass_rush","down","qtr","season","home_team","away_team")
+preferred_nums <- c("yards_gained","epa","air_yards","ydstogo","wp","home_score","away_score","drive")
+```
+
+```{r}
+# Coerce character numerics to numeric quietly for slider ranges (do not mutate source columns)
+NUM_CANDIDATES <- names(NFL_Data)[vapply(NFL_Data, is_numeric_like, logical(1))]
+CAT_CANDIDATES <- setdiff(names(NFL_Data), NUM_CANDIDATES)
+
+
+# Fallbacks if a dataset is all numeric or all categorical
+if(length(CAT_CANDIDATES) < 2){
+# fabricate a categorical via cut on first numeric
+if(length(NUM_CANDIDATES) >= 1){
+NFL_Data[[".auto_cat1"]] <- cut(suppressWarnings(as.numeric(NFL_Data[[NUM_CANDIDATES[1]]])), breaks = 3)
+CAT_CANDIDATES <- c(CAT_CANDIDATES, ".auto_cat1")
+}
+}
+if(length(CAT_CANDIDATES) < 2){
+# fabricate another categorical
+NFL_Data[[".auto_cat2"]] <- sample(LETTERS[1:3], nrow(NFL_Data), replace = TRUE)
+CAT_CANDIDATES <- c(CAT_CANDIDATES, ".auto_cat2")
+}
+
+
+# Ensure two numeric candidates
+if(length(NUM_CANDIDATES) < 2){
+# Create synthetic numeric if needed
+NFL_Data[[".auto_num2"]] <- seq_len(nrow(NFL_Data))
+NUM_CANDIDATES <- unique(c(NUM_CANDIDATES, ".auto_num2"))
+}
+```
