@@ -12,3 +12,8 @@ project2/data/*.csv
 .DS_Store
 .Rhistory
 .RData
+project2/*.csv
+project2/data/*.csv
+.DS_Store
+.Rhistory
+.RData
