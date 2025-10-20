@@ -1,18 +1,18 @@
 # Project 2: NFL Play-by-Play Explorer (Shiny)
 
-An interactive Shiny app to explore NFL play-by-play data (2009–2016/18): filter by team, play type, down & distance, and visualize metrics like yards gained and EPA.
+This Shiny app allows users to explore NFL play-by-play data through **interactive filters**, **summary tables**, and **visualizations**.  
+Users can subset the data by team, play type, and numeric variables like yards gained or EPA, then view customized summaries and plots.
 
-## Purpose
-Help users quickly slice, summarize, and visualize NFL play data for basic analysis and class demos.
+**Main Features:**
+- Sidebar filters to select categorical and numeric variables.  
+- Interactive data table with download option.  
+- One-way and two-way contingency tables for categorical variables.  
+- Numeric summaries (mean, median, SD) across categories.  
+- Multiple plot types (bar, boxplot, scatter, heatmap) with optional color and faceting.
 
-## Data
-- **Source:** Kaggle — NFL Play by Play (2009–2016) by Max Horowitz  
-  https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016
-- **Local file (not committed):** Place the CSV at `data/nfl_play_by_play_2009_2016.csv` (or your local path in `app.R`).  
-  Add large CSVs to `.gitignore`.
+**Data Source:** [Kaggle - NFL Play by Play (2009–2018)](https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016)
 
-## How to Run
+To run the app:
 ```r
-# in R
-install.packages(c("shiny","bslib","dplyr","tidyr","ggplot2","DT","shinycssloaders","readr"))
 shiny::runApp()
+
