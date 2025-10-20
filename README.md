@@ -12,14 +12,12 @@ Users can subset the data by team, play type, and numeric variables like yards g
 
 **Data Source:** [Kaggle - NFL Play by Play (2009–2018)](https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016)
 
-## Data Information
+**Data Information:**
 
 This project uses the NFL Play-by-Play dataset (originally spanning 2009–2018).  
 Because the original CSV file was too large to store in the repository and deploy to [shinyapps.io](https://www.shinyapps.io), the dataset was **subsetted to include only the 2009–2016 seasons**.  
 
 A preprocessing script (`data_prep.R`) extracts the `season` from the `gameid` column, filters the data to the desired years, and saves a smaller `.rds` file used by the Shiny app.
 
-To run the app:
-```r
-shiny::runApp()
+
 
