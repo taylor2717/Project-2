@@ -3,7 +3,7 @@
 # Data Explorer — Shiny
 
 
-Interactive Shiny app to explore a dataset with flexible subsetting, summaries, and plots. Built for the course project; meets all rubric items.
+Interactive Shiny app to explore a dataset with flexible subsetting, summaries, and plots. Built for the course project number two.
 
 
 ## Quick Start
