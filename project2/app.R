@@ -10,11 +10,11 @@ library(shinycssloaders)
 library(DT)
 library(readr)
 
-# ---- Data load (use your local CSV path for now) ----
-NFL_Data <- read_csv("~/Downloads/NFL Play by Play 2009-2018 (v5).csv")
+# ---- Data load  ----
+NFL_Data <- read_csv("NFL Play by Play 2009-2018 (v5).csv")
 # View(NFL_Data)   # <-- remove; running at source time can break app
 
-ABOUT_IMAGE <- "www/placeholder.png"  # ok if missing; it just won't render
+ABOUT_IMAGE <- "nfl_logo.png"  
 
 # ---- Helpers ----
 is_numeric_like <- function(x){
@@ -131,7 +131,7 @@ ui <- page_fillable(
                 h4("Purpose"),
                 p("This app lets you explore a dataset via interactive filtering and summaries."),
                 h4("Data"),
-                p(HTML("NFL play-by-play (2009–2016) from Kaggle. <a href='https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016' target='_blank'>Dataset page</a>. Columns include teams, downs, play types, yards gained, EPA, and more.")),
+                p(HTML("NFL play-by-play (2009–2018) from Kaggle. <a href='https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016' target='_blank'>Dataset page</a>. Columns include teams, downs, play types, yards gained, EPA, and more.")),
                 h4("Navigation"),
                 tags$ul(
                   tags$li(HTML("<b>Sidebar</b>: choose subsets by categories and numeric ranges, then click <i>Apply filters</i>.")),
