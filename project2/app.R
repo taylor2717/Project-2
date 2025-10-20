@@ -11,7 +11,7 @@ library(DT)
 library(readr)
 
 # ---- Data load  ----
-NFL_Data <- read_csv("NFL Play by Play 2009-2018 (v5).csv")
+NFL_Data <- read_csv("~/Downloads/NFL Play by Play 2009-2018 (v5).csv")
 # View(NFL_Data)   # <-- remove; running at source time can break app
 
 ABOUT_IMAGE <- "nfl_logo.png"  
