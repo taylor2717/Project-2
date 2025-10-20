@@ -1,41 +1,18 @@
-# Project-2
+# Project 2: NFL Play-by-Play Explorer (Shiny)
 
-# Data Explorer — Shiny
+An interactive Shiny app to explore NFL play-by-play data (2009–2016/18): filter by team, play type, down & distance, and visualize metrics like yards gained and EPA.
 
+## Purpose
+Help users quickly slice, summarize, and visualize NFL play data for basic analysis and class demos.
 
-Interactive Shiny app to explore a dataset with flexible subsetting, summaries, and plots. Built for the course project number two.
+## Data
+- **Source:** Kaggle — NFL Play by Play (2009–2016) by Max Horowitz  
+  https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016
+- **Local file (not committed):** Place the CSV at `data/nfl_play_by_play_2009_2016.csv` (or your local path in `app.R`).  
+  Add large CSVs to `.gitignore`.
 
-
-## Quick Start
-
-
-1. **Add data**: place your CSV at `data/data.csv` (create the folder if it doesn't exist). Columns can be numeric or categorical.
-2. **About image**: drop an image in `www/` and update `ABOUT_IMAGE` in `app.R`.
-3. **Run locally**:
+## How to Run
 ```r
+# in R
+install.packages(c("shiny","bslib","dplyr","tidyr","ggplot2","DT","shinycssloaders","readr"))
 shiny::runApp()
-```
-4. **Static notebook**: open `static_explore.qmd` and Render to HTML to generate static summaries/plots used to design the app.
-
-
-## Features
-- Sidebar filters: two categorical multi-selects; two numeric variables with dynamic sliders
-- Click **Apply filters** to update the dataset across all tabs
-- **About** tab: project purpose, data source link, image
-- **Data Download** tab: interactive table + CSV download of current subset
-- **Data Exploration** tab:
-- Categorical: one-way and two-way tables
-- Numeric: summaries by group, plus bar/boxplot/scatter/heatmap with optional color and facet
-- Error handling and loading spinners
-
-
-## Repo Structure
-```
-.
-├── app.R
-├── static_explore.qmd
-├── README.md
-├── data/
-│ └── data.csv # your dataset (not tracked if large)
-└── www/
-└── placeholder.png # replace with your own image
