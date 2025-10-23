@@ -1,81 +1,197 @@
 ---
-title: "project2"
+title: "NFL Play-by-Play (2009–2016): Static Exploration"
 format: html
 editor: visual
 ---
 
-```{r}
-install.packages('janitor')
-```
+## Purpose
+
+This notebook is the **static exploration** that informed my Shiny app design.
+
+\
+Here I:
+
+\- describe and load the dataset used in the app
+
+\- produce **one-way** and **two-way** contingency tables
+
+\- compute **numeric summaries** (mean/median/SD) of quantitative variables at levels of a categorical
+
+\- and create **six plots** (≥4 multivariate), mirroring the app’s plot types:
+
+1\) Bar (count)\
+2) Boxplot by group\
+3) **Violin by group**\
+4) Scatter (num1 vs num2)\
+5) **2D bins (num1 vs num2)**\
+6) Heatmap (two cats)
+
+I also apply **faceting** and keep labels/titles consistent so these visuals map cleanly to the interactive controls.
+
+## Data & context
+
+I use a preprocessed subset of the NFL play-by-play dataset.\
+The original CSV (2009–2018) was \>600MB and unsuitable for Git/GitHub and shinyapps.io,\
+so I saved a smaller **RDS** with only **2009–2016** and a focused set of columns.
 
 ```{r}
 library(dplyr)
 library(ggplot2)
 library(readr)
+library(janitor)
+library(forcats)
 library(tidyr)
 
+# Load the static data file used by the app
+DATA_PATH <- "project2/data/nfl_pbp_2009_2016.rds"
+pbp <- readRDS(DATA_PATH)
+```
 
-DATA_PATH <- "data/nfl_play_by_play_2009_2016.csv"
-if(file.exists(DATA_PATH)){
-D <- read_csv(DATA_PATH, show_col_types = FALSE)
+```{r}
+# ---- Light prep: make needed columns & factors robustly ----
+# down/qtr as factors if present
+if ("down" %in% names(pbp)) pbp$down <- factor(pbp$down)
+if ("qtr"  %in% names(pbp)) pbp$qtr  <- factor(pbp$qtr)
+
+# Determine play-type column or derive from pass/rush
+pt_col <- intersect(c("play_type","PlayType","play.type"), names(pbp))
+if (length(pt_col) == 1) {
+  pbp <- pbp %>%
+    mutate(play_type = as.factor(.data[[pt_col]]))
+} else if (all(c("pass","rush") %in% names(pbp))) {
+  pbp <- pbp %>%
+    mutate(play_type = factor(case_when(
+      pass == 1 ~ "pass",
+      rush == 1 ~ "rush",
+      TRUE      ~ "other"
+    )))
 } else {
-D <- ggplot2::diamonds |> as.data.frame()
-}
-
-
-# Helpers
-is_numeric_like <- function(x){ is.numeric(x) || (is.character(x) && suppressWarnings(!any(is.na(as.numeric(x))))) }
-NUMS <- names(D)[vapply(D, is_numeric_like, logical(1))]
-CATS <- setdiff(names(D), NUMS)
-if(length(CATS) < 2){
-D$auto_group <- cut(suppressWarnings(as.numeric(D[[NUMS[1]]])), breaks = 3)
-CATS <- c(CATS, "auto_group")
+  pbp$play_type <- factor("other")
 }
 ```
 
 ```{r}
-# One-way
-oneway <- D |> count(.data[[CATS[1]]], name = "n") |> mutate(pct = round(100*n/sum(n),2))
-oneway
+# one way contingency table
+oneway <- pbp %>%
+  count(play_type, name = "n") %>%
+  arrange(desc(n)) %>%
+  mutate(pct = round(100 * n / sum(n), 2))
+knitr::kable(oneway, caption = "One-way table: Play type")
 
-
-# Two-way
-library(janitor)
-twoway <- D |> tabyl(.data[[CATS[1]]], .data[[CATS[2]]]) |> adorn_totals("row") |> adorn_totals("col")
-twoway
 ```
 
 ```{r}
-summ <- D |> group_by(.data[[CATS[1]]]) |>
-summarise(across(all_of(NUMS[1:min(3,length(NUMS))]), list(n = ~sum(!is.na(.)), mean = ~mean(as.numeric(.), na.rm=TRUE), sd = ~sd(as.numeric(.), na.rm=TRUE)), .names = "{.col}_{.fn}"))
-summ
+# two way contingency table
+twoway <- pbp %>%
+  filter(!is.na(down), !is.na(play_type)) %>%
+  tabyl(down, play_type) %>%
+  adorn_totals(c("row","col")) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 1) %>%
+  adorn_ns() %>%
+  as.data.frame()
+knitr::kable(twoway, caption = "Two-way: Down × Play type (row % with counts)")
+
 ```
 
 ```{r}
-# 2) Stacked bar colored by second categorical
-D |> ggplot(aes(x = .data[[CATS[1]]], fill = .data[[CATS[2]]])) + geom_bar(position = "stack") + labs(title = "Stacked counts") + theme_minimal()
+# Numerical Summaries
+num_var  <- "epa"           
+cat_var  <- "down"          # categorical to group by
+stopifnot(num_var %in% names(pbp), cat_var %in% names(pbp))
+
+num_summ <- pbp %>%
+  filter(!is.na(.data[[num_var]]), !is.na(.data[[cat_var]])) %>%
+  group_by(.data[[cat_var]]) %>%
+  summarise(
+    n      = dplyr::n(),
+    mean   = mean(as.numeric(.data[[num_var]]), na.rm = TRUE),
+    median = median(as.numeric(.data[[num_var]]), na.rm = TRUE),
+    sd     = sd(as.numeric(.data[[num_var]]), na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n))
+knitr::kable(num_summ, caption = paste("Numeric summaries of", num_var, "by", cat_var))
+
 ```
 
 ```{r}
-# 3) Boxplot by group
-D |> ggplot(aes(x = .data[[CATS[1]]], y = suppressWarnings(as.numeric(.data[[NUMS[1]]])))) + geom_boxplot() + labs(title = "Boxplot") + theme_minimal()
+# Plot 1: Bar
+ggplot(pbp, aes(x = play_type, fill = down)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Play Types by Down (Counts)",
+    x = "Play type", y = "Count", fill = "Down"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
 ```
 
 ```{r}
-# 4) Scatter of two numeric variables, colored by categorical
-if(length(NUMS) >= 2){
-D |> ggplot(aes(x = suppressWarnings(as.numeric(.data[[NUMS[1]]])), y = suppressWarnings(as.numeric(.data[[NUMS[2]]])), color = .data[[CATS[1]]])) +
-geom_point(alpha = 0.5) + labs(title = "Scatter (two numerics)") + theme_minimal()
-}
+# Plot 2: Boxplot
+ggplot(pbp %>% filter(!is.na(epa)),
+       aes(x = down, y = as.numeric(epa), fill = play_type)) +
+  geom_boxplot(outlier.alpha = 0.35) +
+  labs(
+    title = "EPA by Down and Play Type",
+    x = "Down", y = "EPA", fill = "Play type"
+  ) +
+  theme_minimal()
+
 ```
 
 ```{r}
-# 5) Faceted bar
-D |> ggplot(aes(x = .data[[CATS[1]]])) + geom_bar() + facet_wrap(vars(.data[[CATS[2]]])) + labs(title = "Faceted bar") + theme_minimal()
+# Plot 3: Violin
+ggplot(pbp %>% filter(!is.na(epa)),
+       aes(x = down, y = as.numeric(epa), fill = play_type)) +
+  geom_violin(trim = FALSE, alpha = 0.85) +
+  labs(
+    title = "EPA by Down and Play Type (Violin)",
+    x = "Down", y = "EPA", fill = "Play type"
+  ) +
+  theme_minimal()
+
 ```
 
 ```{r}
-# 6) Heatmap of two cats (counts)
-D2 <- D |> count(.data[[CATS[1]]], .data[[CATS[2]]]); names(D2) <- c("rows","cols","n")
-D2 |> ggplot(aes(x = cols, y = rows, fill = n)) + geom_tile() + labs(title = "Heatmap") + theme_minimal()
+# Plot 4: Scatter
+ggplot(pbp %>% filter(!is.na(yards_gained), !is.na(epa)),
+       aes(x = as.numeric(yards_gained), y = as.numeric(epa),
+           color = play_type)) +
+  geom_point(alpha = 0.4) +
+  facet_wrap(vars(down)) +
+  labs(
+    title = "EPA vs Yards Gained (Faceted by Down)",
+    x = "Yards gained", y = "EPA", color = "Play type"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+# Plot 5: 2D Bins
+ggplot(pbp %>% filter(!is.na(ydstogo), !is.na(yardline_100)),
+       aes(x = as.numeric(ydstogo), y = as.numeric(yardline_100))) +
+  geom_bin2d(bins = 30) +
+  labs(
+    title = "2D-Binned Density: Yards to Go vs Yardline",
+    x = "Yards to go", y = "Yardline (0 = TD)"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+# Plot 6: Heatmap
+counts <- pbp %>% count(down, play_type, name = "n")
+ggplot(counts, aes(x = play_type, y = down, fill = n)) +
+  geom_tile() +
+  labs(
+    title = "Heatmap: Down × Play Type",
+    x = "Play type", y = "Down", fill = "Count"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
 ```
