@@ -10,11 +10,11 @@ library(shinycssloaders)
 library(DT)
 library(readr)
 
-# ---- Data load (use your local CSV path for now) ----
-NFL_Data <- read_csv("~/Downloads/NFL Play by Play 2009-2018 (v5).csv")
-# View(NFL_Data)   # <-- remove; running at source time can break app
+# ---- Data load ----
+DATA_PATH <- "data/nfl_pbp_2009_2016.rds"
+NFL_Data <- readRDS(DATA_PATH)
 
-ABOUT_IMAGE <- "www/placeholder.png"  # ok if missing; it just won't render
+ABOUT_IMAGE <- "nfl_logo.png"  
 
 # ---- Helpers ----
 is_numeric_like <- function(x){
@@ -137,7 +137,9 @@ ui <- page_fillable(
                   tags$li(HTML("<b>Sidebar</b>: choose subsets by categories and numeric ranges, then click <i>Apply filters</i>.")),
                   tags$li(HTML("<b>Data Download</b>: preview and download the (sub)set as CSV.")),
                   tags$li(HTML("<b>Data Exploration</b>: build contingency tables, summary stats, and plots with faceting."))
-                )
+                ),
+                h4("Note"),
+                p("Click button in bottom right hand corner to expand data/plot(s).")
               )
             ),
             card(
@@ -211,7 +213,7 @@ ui <- page_fillable(
                   hr(),
                   selectInput(
                     "plot_type", "Plot type",
-                    choices = c("Bar (count)", "Boxplot by group", "Scatter (num1 vs num2)", "Heatmap (two cats)"),
+                    choices = c("Bar (count)", "Boxplot by group", "Scatter (num1 vs num2)", "Violin by group", "2D bins (num1 vs num2)", "Heatmap (two cats)"),
                     selected = "Boxplot by group"
                   ),
                   selectInput("plot_color", "Color by (optional)", choices = c("(none)", CAT_CANDIDATES), selected = "(none)"),
