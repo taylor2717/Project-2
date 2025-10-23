@@ -20,6 +20,7 @@ Because the original CSV file was too large to store in the repository and deplo
 A preprocessing script (`data_prep.R`) extracts the `season` from the `gameid` column, filters the data to the desired years, and saves a smaller `.rds` file used by the Shiny app.
 
 **Static Exploration File:**
+
 The file `project2.qmd` contains the **static data exploration** for this project.  
 It includes one-way and two-way contingency tables, numerical summaries of quantitative variables by categorical groups, and six different plots (including multivariate and faceted visualizations). These analyses were developed prior to building the Shiny app and served as the foundation for the app’s interactive visualizations.
 
