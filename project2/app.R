@@ -412,26 +412,32 @@ server <- function(input, output, session){
         theme_minimal()
       
     } else if (input$plot_type == "Violin by group") {
-      req(input$num_summary, x_cat)
-      p <- ggplot(df, aes(
-        x = .data[[x_cat]],
-        y = suppressWarnings(as.numeric(.data[[input$num_summary]])),
-        fill = if (!is.null(col_by)) .data[[col_by]] else NULL
-      )) +
-        geom_violin(trim = FALSE, alpha = 0.85) +
-        labs(title = "Violin plot by group", x = x_cat, y = input$num_summary, fill = legend_title)
+      req(input$num_summary, input$by_cat)
+      p <- ggplot(
+        df,
+        aes(
+          x = .data[[input$by_cat]],
+          y = suppressWarnings(as.numeric(.data[[input$num_summary]])),
+          fill = if (!is.null(col_by)) .data[[col_by]] else NULL
+        )
+      ) +
+        geom_violin(trim = FALSE, alpha = 0.8) +
+        labs(x = input$by_cat, y = input$num_summary, title = "Violin plot by group") +
         theme_minimal()
       
-    
     } else if (input$plot_type == "2D bins (num1 vs num2)") {
-      req(num_x, num_y)
-      p <- ggplot(df, aes(
-        x = suppressWarnings(as.numeric(.data[[num_x]])),
-        y = suppressWarnings(as.numeric(.data[[num_y]]))
-      )) +
+      req(input$num_var1, input$num_var2)
+      p <- ggplot(
+        df,
+        aes(
+          x = suppressWarnings(as.numeric(.data[[input$num_var1]])),
+          y = suppressWarnings(as.numeric(.data[[input$num_var2]]))
+        )
+      ) +
         geom_bin2d(bins = 30) +
-        labs(title = "2D-binned density", x = num_x, y = num_y)
+        labs(x = input$num_var1, y = input$num_var2, title = "2D-binned density") +
         theme_minimal()
+      
       
     } else if (input$plot_type == "Heatmap (two cats)") {
       req(input$cat_twoway_rows, input$cat_twoway_cols)
