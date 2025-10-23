@@ -8,7 +8,7 @@ Users can subset the data by team, play type, and numeric variables like yards g
 - Interactive data table with download option.  
 - One-way and two-way contingency tables for categorical variables.  
 - Numeric summaries (mean, median, SD) across categories.  
-- Multiple plot types (bar, boxplot, scatter, heatmap) with optional color and faceting.
+- Multiple plot types (bar, boxplot, scatter, heatmap, violin, 2D bins) with optional color and faceting.
 
 **Data Source:** [Kaggle - NFL Play by Play (2009–2018)](https://www.kaggle.com/datasets/maxhorowitz/nflplaybyplay2009to2016)
 
