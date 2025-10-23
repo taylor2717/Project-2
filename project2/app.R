@@ -59,7 +59,7 @@ if (length(NUM_CANDIDATES) < 2){
   NUM_CANDIDATES <- unique(c(NUM_CANDIDATES, ".auto_num2"))
 }
 
-# ---- Base data used app-wide (you referenced BASE later) ----
+# ---- Base data used app-wide ----
 BASE <- NFL_Data
 
 # ---- UI ----
