@@ -10,10 +10,11 @@ library(shinycssloaders)
 library(DT)
 library(readr)
 
-# ---- Data load  ----
-NFL_Data <- readRDS("data/nfl_pbp_2009_2016.rds")
+# ---- Data load (use your local CSV path for now) ----
+NFL_Data <- read_csv("~/Downloads/NFL Play by Play 2009-2018 (v5).csv")
+# View(NFL_Data)   # <-- remove; running at source time can break app
 
-ABOUT_IMAGE <- "nfl_logo.png"  
+ABOUT_IMAGE <- "www/placeholder.png"  # ok if missing; it just won't render
 
 # ---- Helpers ----
 is_numeric_like <- function(x){
@@ -380,6 +381,7 @@ server <- function(input, output, session){
     
     col_by <- if (identical(input$plot_color, "(none)")) NULL else input$plot_color
     facet_by <- if (identical(input$facet_var, "(none)")) NULL else input$facet_var
+    legend_title <- if (!is.null(col_by)) col_by else NULL
     
     p <- ggplot()
     
@@ -387,7 +389,7 @@ server <- function(input, output, session){
       req(input$by_cat)
       p <- ggplot(df, aes(x = .data[[input$by_cat]], fill = if (!is.null(col_by)) .data[[col_by]] else NULL)) +
         geom_bar(position = "dodge") +
-        labs(x = input$by_cat, y = "Count", title = "Bar chart (counts)") +
+        labs(x = input$by_cat, y = "Count", title = "Bar chart (counts)", fill = legend_title) +
         theme_minimal()
       
     } else if (input$plot_type == "Boxplot by group") {
@@ -395,7 +397,7 @@ server <- function(input, output, session){
       p <- ggplot(df, aes(x = .data[[input$by_cat]], y = suppressWarnings(as.numeric(.data[[input$num_summary]])),
                           fill = if (!is.null(col_by)) .data[[col_by]] else NULL)) +
         geom_boxplot(outlier.alpha = 0.4) +
-        labs(x = input$by_cat, y = input$num_summary, title = "Boxplot by group") +
+        labs(x = input$by_cat, y = input$num_summary, title = "Boxplot by group", fill = legend_title) +
         theme_minimal()
       
     } else if (input$plot_type == "Scatter (num1 vs num2)") {
@@ -404,7 +406,29 @@ server <- function(input, output, session){
                           y = suppressWarnings(as.numeric(.data[[input$num_var2]])),
                           color = if (!is.null(col_by)) .data[[col_by]] else NULL)) +
         geom_point(alpha = 0.6) +
-        labs(x = input$num_var1, y = input$num_var2, title = "Scatterplot") +
+        labs(x = input$num_var1, y = input$num_var2, title = "Scatterplot", fill = legend_title) +
+        theme_minimal()
+      
+    } else if (input$plot_type == "Violin by group") {
+      req(input$num_summary, x_cat)
+      p <- ggplot(df, aes(
+        x = .data[[x_cat]],
+        y = suppressWarnings(as.numeric(.data[[input$num_summary]])),
+        fill = if (!is.null(col_by)) .data[[col_by]] else NULL
+      )) +
+        geom_violin(trim = FALSE, alpha = 0.85) +
+        labs(title = "Violin plot by group", x = x_cat, y = input$num_summary, fill = legend_title)
+        theme_minimal()
+      
+    
+    } else if (input$plot_type == "2D bins (num1 vs num2)") {
+      req(num_x, num_y)
+      p <- ggplot(df, aes(
+        x = suppressWarnings(as.numeric(.data[[num_x]])),
+        y = suppressWarnings(as.numeric(.data[[num_y]]))
+      )) +
+        geom_bin2d(bins = 30) +
+        labs(title = "2D-binned density", x = num_x, y = num_y)
         theme_minimal()
       
     } else if (input$plot_type == "Heatmap (two cats)") {
@@ -413,7 +437,7 @@ server <- function(input, output, session){
       names(tmp) <- c("rows","cols","n")
       p <- ggplot(tmp, aes(x = cols, y = rows, fill = n)) +
         geom_tile() +
-        labs(x = input$cat_twoway_cols, y = input$cat_twoway_rows, title = "Heatmap of counts") +
+        labs(x = input$cat_twoway_cols, y = input$cat_twoway_rows, title = "Heatmap of counts", fill = legend_title) +
         theme_minimal()
     }
     
